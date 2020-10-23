@@ -1,2 +1,0 @@
-# ThePieShop.WebAPI
-ThePieShop.WebAPI
