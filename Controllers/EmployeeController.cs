@@ -1,6 +1,7 @@
 ﻿using ThePieShop.Data.Repositories;
 using ThePieShop.Shared;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace ThePieShop.WebAPI.Api.Controllers
 {
@@ -18,17 +19,17 @@ namespace ThePieShop.WebAPI.Api.Controllers
         [HttpGet]
         public IActionResult GetAllEmployees()
         {
-            return Ok(_employeeRepository.GetAllEmployees());
+            return Ok(_employeeRepository.GetAllEmployeesWithContacts());
         }
 
         [HttpGet("{id}")]
         public IActionResult GetEmployeeById(int id)
         {
-            return Ok(_employeeRepository.GetEmployeeById(id));
+            return Ok(_employeeRepository.GetEmployeeWithDetailsById(id));
         }
 
         [HttpPost]
-        public IActionResult CreateEmployee([FromBody] Employee employee)
+        public async Task<IActionResult> CreateEmployee([FromBody] Employee employee)
         {
             if (employee == null)
                 return BadRequest();
@@ -41,13 +42,13 @@ namespace ThePieShop.WebAPI.Api.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var createdEmployee = _employeeRepository.AddEmployee(employee);
+            var createdEmployee = await _employeeRepository.AddEmployeeAsync(employee);
 
             return Created("employee", createdEmployee);
         }
 
         [HttpPut]
-        public IActionResult UpdateEmployee([FromBody] Employee employee)
+        public async Task<IActionResult> UpdateEmployee([FromBody] Employee employee)
         {
             if (employee == null)
                 return BadRequest();
@@ -60,7 +61,7 @@ namespace ThePieShop.WebAPI.Api.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var employeeToUpdate = _employeeRepository.GetEmployeeById(employee.EmployeeId);
+            var employeeToUpdate = await _employeeRepository.GetByIdAsync(employee.EmployeeId);
 
             if (employeeToUpdate == null)
                 return NotFound();
@@ -71,16 +72,16 @@ namespace ThePieShop.WebAPI.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        public IActionResult DeleteEmployee(int id)
+        public async Task<IActionResult> DeleteEmployee(int id)
         {
             if (id == 0)
                 return BadRequest();
 
-            var employeeToDelete = _employeeRepository.GetEmployeeById(id);
+            var employeeToDelete = await _employeeRepository.GetByIdAsync(id);
             if (employeeToDelete == null)
                 return NotFound();
 
-            _employeeRepository.DeleteEmployee(id);
+            _employeeRepository.RemoveById(id);
 
             return NoContent();//success
         }
